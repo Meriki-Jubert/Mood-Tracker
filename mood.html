@@ -454,7 +454,7 @@
             weekEnd.setDate(weekEnd.getDate() + 6);
             const weekEndStr = formatDate(weekEnd);
 
-            let res = await fetch(`http://localhost:3001/api/mood/history?from=${weekStartStr}&to=${weekEndStr}`, { credentials: 'include' });
+            let res = await fetch(`https://mood-tracker-jf7q.onrender.com/api/mood/history?from=${weekStartStr}&to=${weekEndStr}`, { credentials: 'include' });
             let data = await res.json();
             const weekTbody = document.getElementById('weekHistory');
             weekTbody.innerHTML = '';
@@ -527,7 +527,7 @@
             const lastDay = new Date(currentYear, currentMonth, 0).getDate();
             const lastDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
             // Fetch for this month
-            let res = await fetch(`http://localhost:3001/api/mood/history?from=${firstDay}&to=${lastDate}`, { credentials: 'include' });
+            let res = await fetch(`https://mood-tracker-jf7q.onrender.com/api/mood/history?from=${firstDay}&to=${lastDate}`, { credentials: 'include' });
             let data = await res.json();
             const monthTbody = document.getElementById('monthHistory');
             monthTbody.innerHTML = '';
@@ -558,7 +558,7 @@
                 alert('Please select your mood.');
                 return;
             }
-            const res = await fetch('http://localhost:3001/api/mood', {
+            const res = await fetch('https://mood-tracker-jf7q.onrender.com/api/mood', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -581,7 +581,7 @@
         async function searchUser() {
             const username = document.getElementById('searchUserInput').value.trim();
             if (!username) return;
-            const res = await fetch(`http://localhost:3001/api/users/search?username=${encodeURIComponent(username)}`, { credentials: 'include' });
+            const res = await fetch(`https://mood-tracker-jf7q.onrender.com/api/users/search?username=${encodeURIComponent(username)}`, { credentials: 'include' });
             const data = await res.json();
             const resultsDiv = document.getElementById('searchResults');
             resultsDiv.innerHTML = '';
@@ -600,7 +600,7 @@
         }
 
         async function sendFriendRequest(userId) {
-            await fetch('http://localhost:3001/api/friends/request', {
+            await fetch('https://mood-tracker-jf7q.onrender.com/api/friends/request', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -610,7 +610,7 @@
         }
 
         async function fetchFriendRequests() {
-            const res = await fetch('http://localhost:3001/api/friends/requests', { credentials: 'include' });
+            const res = await fetch('https://mood-tracker-jf7q.onrender.com/api/friends/requests', { credentials: 'include' });
             const data = await res.json();
             const list = document.getElementById('friendRequestsList');
             list.innerHTML = '';
@@ -636,7 +636,7 @@
         }
 
         async function respondFriendRequest(requestId, status) {
-            await fetch('http://localhost:3001/api/friends/respond', {
+            await fetch('https://mood-tracker-jf7q.onrender.com/api/friends/respond', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -647,7 +647,7 @@
         }
 
         async function fetchFriendsList() {
-            const res = await fetch('http://localhost:3001/api/friends/list', { credentials: 'include' });
+            const res = await fetch('https://mood-tracker-jf7q.onrender.com/api/friends/list', { credentials: 'include' });
             const data = await res.json();
             const list = document.getElementById('friendsList');
             list.innerHTML = '';
@@ -692,7 +692,7 @@
 
         async function loadChatMessages() {
             if (!currentChatFriend) return;
-            const res = await fetch(`http://localhost:3001/api/messages/${currentChatFriend.id}`, { credentials: 'include' });
+            const res = await fetch(`https://mood-tracker-jf7q.onrender.com/api/messages/${currentChatFriend.id}`, { credentials: 'include' });
             const data = await res.json();
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.innerHTML = '';
@@ -715,7 +715,7 @@
         // Delete message function
         async function deleteMessage(messageId) {
             if (!confirm('Delete this message?')) return;
-            await fetch(`http://localhost:3001/api/messages/${messageId}`, {
+            await fetch(`https://mood-tracker-jf7q.onrender.com/api/messages/${messageId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -726,7 +726,7 @@
             const input = document.getElementById('chatInput');
             const msg = input.value.trim();
             if (!msg || !currentChatFriend) return;
-            await fetch('http://localhost:3001/api/messages/send', {
+            await fetch('https://mood-tracker-jf7q.onrender.com/api/messages/send', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -747,7 +747,7 @@
         // Store user id in localStorage for chat message alignment
         async function storeUserId() {
             // Always update user id on page load
-            const res = await fetch('http://localhost:3001/api/user', { credentials: 'include' });
+            const res = await fetch('https://mood-tracker-jf7q.onrender.com/api/user', { credentials: 'include' });
             const data = await res.json();
             if (data && data.id) {
                 localStorage.setItem('moodtracker_userid', data.id);
@@ -759,7 +759,7 @@
         // --- Friends UI logic (cont'd) ---
         async function showFriendMoodHistory(friend) {
             document.getElementById('friendMoodModalTitle').textContent = `${friend.name} (@${friend.username}) - Mood History`;
-            const res = await fetch(`http://localhost:3001/api/friends/${friend.id}/mood/history?type=week`, { credentials: 'include' });
+            const res = await fetch(`https://mood-tracker-jf7q.onrender.com/api/friends/${friend.id}/mood/history?type=week`, { credentials: 'include' });
             const data = await res.json();
             const tbody = document.getElementById('friendMoodHistoryBody');
             tbody.innerHTML = '';
@@ -802,7 +802,7 @@
                 welcomeEl.textContent = name;
             } else {
                 // Try to fetch from backend if not in localStorage
-                fetch('http://localhost:3001/api/user', { credentials: 'include' })
+                fetch('https://mood-tracker-jf7q.onrender.com/api/user', { credentials: 'include' })
                     .then(res => res.json())
                     .then(data => {
                         if (data.name) {
