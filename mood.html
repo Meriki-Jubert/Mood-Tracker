@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Document</title>
+    <style>
+        /* Generic glow effect */
+        .glow {
+            box-shadow: 0 0 10px 2px, 0 0 20px 4px;
+            border-width: 2px !important;
+        }
+        /* Mood-specific glow colors */
+        .glow-happy {
+            box-shadow: 0 0 10px 2px #198754, 0 0 20px 4px #198754;
+            border-color: #198754 !important;
+        }
+        .glow-neutral {
+            box-shadow: 0 0 10px 2px #ffc107, 0 0 20px 4px #ffc107;
+            border-color: #ffc107 !important;
+        }
+        .glow-sad {
+            box-shadow: 0 0 10px 2px #dc3545, 0 0 20px 4px #dc3545;
+            border-color: #dc3545 !important;
+        }
+        /* Simple modal styling for demo (Bootstrap modal JS not used) */
+        #friendMoodHistoryModal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        #friendMoodHistoryModal.show {
+            display: flex;
+        }
+        #friendMoodHistoryModal .modal-dialog {
+            margin: auto;
+        }
+        /* Chat Modal */
+        #chatModal {
+            display: none;
+            position: fixed;
+            z-index: 1060;
+            left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        #chatModal.show {
+            display: flex;
+        }
+        #chatModal .modal-dialog {
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            
+            <h1 class="m-5 text-primary display-1">MOOD TRACKER</h1>
+            <nav class="text-end">
+                <a href="#history" class="btn btn-warning m-2">History</a>
+                <a href="#" class="btn btn-success m-2">Contact Us</a>
+                <a href="/LogIn.html" class="btn btn-danger m-2">LogOut</a>
+            </nav>
+        </div>
+
+        <div class="row">
+            <h2>Welcome <span class="text-primary" id="welcomeName">@username</span></h2>
+        </div>
+
+        <div class="row">
+            <h1 class="text-center text-success m-2">How are you feeling today?</h1>
+            <p class="text-center text-primary">Select your current mood</p>
+            <div class="d-flex justify-content-center">
+                <button id="happyBtn" class="btn btn-outline-success m-2">Happy</button>
+                <button id="neutralBtn" class="btn btn-outline-warning m-2">Neutral</button>
+                <button id="sadBtn" class="btn btn-outline-danger m-2">Sad</button>
+            </div>
+
+        <div class="row">
+            <h2 class="text-center text-success m-2">Add a note about your mood</h2>
+            <form id="moodForm">
+                <div class="mb-3">
+                    <textarea class="form-control" rows="3" placeholder="Write your thoughts here..." id="moodNote"></textarea>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button type="submit" class="btn btn-primary">Save Note</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row">
+            <h2>Here's a quote that fits your mood</h2>
+            <blockquote id="quoteBlock" class="blockquote m-3 p-4 bg-success text-white rounded">
+                <p id="quoteText" class="mb-0">"The only way to do great work is to love what you do."</p>
+                <footer id="quoteAuthor" class="blockquote-footer text-end text-warning">Steve Jobs</footer>
+            </blockquote>
+        </div>
+    </div>
+
+    <div class="row">
+        <h3 class="text-center text-success m-2">Activities to help with your mood for today</h3>
+        <ul id="activitiesList">
+            <li class="act"></li>
+            <li class="act"></li>
+            <li class="act"></li>
+            <li class="act"></li>
+            <li class="act"></li>
+        </ul>
+    </div>
+
+<!--History-->
+    <div class="container border mt-5 mb-5" id="history">
+        <h2 class="text-center text-primary m-4">Mood History</h2>
+        <h3 class="text-start text-success m-2">This Week</h3>
+        <button class="btn btn-outline-primary m-2" id="prevWeekBtn">Previous Week</button>
+        <button class="btn btn-outline-primary m-2" id="nextWeekBtn">Next Week</button>
+        <span id="weekLabel" class="ms-2"></span>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Mood</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody id="weekHistory">
+                <!-- Mood history rows will be inserted here -->
+            </tbody>
+        </table>
+        <div class="chart">
+            <h3 class="text-start text-success m-2">Weekly Chart</h3>
+            <canvas id="weekChart" height="100"></canvas>
+        </div>
+
+        <h3 class="text-start text-success m-2">Month</h3>
+        <button class="btn btn-outline-primary m-2" id="prevMonthBtn">Previous Month</button>
+        <button class="btn btn-outline-primary m-2" id="nextMonthBtn">Next Month</button>
+        <span id="monthLabel" class="ms-2"></span>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Mood</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody id="monthHistory">
+                <!-- Mood history rows will be inserted here -->
+            </tbody>
+        </table>
+        <div class="chart">
+            <h3 class="text-start text-success m-2">Monthly Chart</h3>
+            <canvas id="monthChart" height="100"></canvas>
+        </div>
+    </div>
+
+<!-- Friends Section -->
+    <div class="container border mt-5 mb-5" id="friends">
+        <h2 class="text-center text-primary m-4">Friends</h2>
+        <div class="mb-3">
+            <input type="text" id="searchUserInput" class="form-control" placeholder="Search users by username...">
+            <button class="btn btn-outline-primary mt-2" id="searchUserBtn">Search</button>
+        </div>
+        <div id="searchResults"></div>
+        <h4 class="mt-4">Friend Requests</h4>
+        <ul id="friendRequestsList"></ul>
+        <h4 class="mt-4">Your Friends</h4>
+        <ul id="friendsList"></ul>
+        <div id="friendMoodHistoryModal" class="modal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="friendMoodModalTitle">Friend's Mood History</h5>
+                        <button type="button" class="btn-close" onclick="closeFriendMoodModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mood</th>
+                                    <th>Note</th>
+                                </tr>
+                            </thead>
+                            <tbody id="friendMoodHistoryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Chat Modal -->
+        <div id="chatModal" class="modal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="chatModalTitle">Chat</h5>
+                        <button type="button" class="btn-close" onclick="closeChatModal()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="chatMessages" style="height:300px; overflow-y:auto; border:1px solid #ccc; padding:10px; background:#f8f9fa;"></div>
+                        <div class="input-group mt-3">
+                            <input type="text" id="chatInput" class="form-control" placeholder="Type a message...">
+                            <button class="btn btn-primary" id="sendChatBtn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Mood button glow logic with color-specific glow
+        const moodButtons = [
+            document.getElementById('happyBtn'),
+            document.getElementById('neutralBtn'),
+            document.getElementById('sadBtn')
+        ];
+        const glowClasses = ['glow-happy', 'glow-neutral', 'glow-sad'];
+
+        // Quotes for each mood
+        const quotes = {
+            happy: [
+                { text: "Happiness is not by chance, but by choice.", author: "Jim Rohn" },
+                { text: "The purpose of our lives is to be happy.", author: "Dalai Lama" },
+                { text: "Happiness depends upon ourselves.", author: "Aristotle" },
+                { text: "For every minute you are angry you lose sixty seconds of happiness.", author: "Ralph Waldo Emerson" },
+                { text: "Happiness is only real when shared.", author: "Jon Krakauer" },
+                { text: "Count your age by friends, not years. Count your life by smiles, not tears.", author: "John Lennon" },
+                { text: "The most important thing is to enjoy your life—to be happy—it's all that matters.", author: "Audrey Hepburn" },
+                { text: "Happiness is a direction, not a place.", author: "Sydney J. Harris" },
+                { text: "Be happy for this moment. This moment is your life.", author: "Omar Khayyam" },
+                { text: "Happiness is not something ready made. It comes from your own actions.", author: "Dalai Lama" }
+            ],
+            neutral: [
+                { text: "Every day may not be good, but there is something good in every day.", author: "Alice Morse Earle" },
+                { text: "Keep your face always toward the sunshine—and shadows will fall behind you.", author: "Walt Whitman" },
+                { text: "Life is a journey, not a destination.", author: "Ralph Waldo Emerson" },
+                { text: "Sometimes the most productive thing you can do is relax.", author: "Mark Black" },
+                { text: "The best way out is always through.", author: "Robert Frost" },
+                { text: "This too shall pass.", author: "Persian Proverb" },
+                { text: "Balance is not something you find, it’s something you create.", author: "Jana Kingsford" },
+                { text: "Take life day by day and be grateful for the little things.", author: "Unknown" },
+                { text: "Not every day is good, but there is good in every day.", author: "Unknown" },
+                { text: "Sometimes you win, sometimes you learn.", author: "John C. Maxwell" }
+            ],
+            sad: [
+                { text: "Tough times never last, but tough people do.", author: "Robert H. Schuller" },
+                { text: "Sadness flies away on the wings of time.", author: "Jean de La Fontaine" },
+                { text: "Stars can't shine without darkness.", author: "D.H. Sidebottom" },
+                { text: "The pain you feel today is the strength you feel tomorrow.", author: "Unknown" },
+                { text: "Every day is a new beginning. Take a deep breath and start again.", author: "Unknown" },
+                { text: "Out of difficulties grow miracles.", author: "Jean de La Bruyère" },
+                { text: "What feels like the end is often the beginning.", author: "Unknown" },
+                { text: "Even the darkest night will end and the sun will rise.", author: "Victor Hugo" },
+                { text: "Sometimes you have to know sadness to appreciate happiness.", author: "Unknown" },
+                { text: "You are stronger than you think.", author: "Unknown" }
+            ]
+        };
+
+        // Mood to quote block background class
+        const moodBgClass = {
+            happy: "bg-success",
+            neutral: "bg-warning",
+            sad: "bg-danger"
+        };
+
+        // Mood to quote author text color class
+        const moodAuthorClass = {
+            happy: "text-warning",
+            neutral: "text-dark",
+            sad: "text-warning"
+        };
+
+        function setQuote(mood) {
+            const quoteBlock = document.getElementById('quoteBlock');
+            const quoteText = document.getElementById('quoteText');
+            const quoteAuthor = document.getElementById('quoteAuthor');
+            // Remove all mood bg classes
+            quoteBlock.classList.remove("bg-success", "bg-warning", "bg-danger");
+            // Remove all author color classes
+            quoteAuthor.classList.remove("text-warning", "text-dark");
+            // Pick a random quote
+            const moodQuotes = quotes[mood];
+            const random = Math.floor(Math.random() * moodQuotes.length);
+            quoteText.textContent = `"${moodQuotes[random].text}"`;
+            quoteAuthor.textContent = moodQuotes[random].author;
+            // Set background and author color
+            quoteBlock.classList.add(moodBgClass[mood]);
+            quoteAuthor.classList.add(moodAuthorClass[mood]);
+        }
+
+        // Activities for each mood
+        const activities = {
+            happy: [
+                "Share your happiness with a friend.",
+                "Go for a walk and enjoy nature.",
+                "Listen to your favorite upbeat song.",
+                "Write down three things you're grateful for.",
+                "Dance like nobody's watching.",
+                "Try a new hobby or craft.",
+                "Cook a delicious meal.",
+                "Take fun selfies or photos.",
+                "Plan a small celebration.",
+                "Help someone in need."
+            ],
+            neutral: [
+                "Read a chapter of a book.",
+                "Organize your workspace.",
+                "Take a short nap.",
+                "Go for a gentle stroll.",
+                "Listen to calming music.",
+                "Do a simple breathing exercise.",
+                "Watch a light-hearted show.",
+                "Try a puzzle or brain game.",
+                "Make a cup of tea or coffee.",
+                "Reflect on your day in a journal."
+            ],
+            sad: [
+                "Talk to a trusted friend or family member.",
+                "Write your feelings in a journal.",
+                "Take deep breaths and meditate.",
+                "Go for a walk outside.",
+                "Listen to soothing music.",
+                "Watch a comforting movie.",
+                "Draw or doodle your emotions.",
+                "Do some gentle stretching.",
+                "Treat yourself to your favorite snack.",
+                "Practice self-compassion."
+            ]
+        };
+
+        function setActivities(mood) {
+            const list = document.getElementById('activitiesList');
+            // Shuffle and pick 5 activities
+            const shuffled = activities[mood].slice().sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            // Update list items
+            list.querySelectorAll('li.act').forEach((li, idx) => {
+                li.textContent = selected[idx] || '';
+            });
+        }
+
+        // Track selected mood
+        let selectedMood = 'happy'; // default
+
+        // Mood button glow logic with color-specific glow and quote/activity update
+        moodButtons.forEach((btn, idx) => {
+            btn.addEventListener('click', function() {
+                moodButtons.forEach((b, i) => b.classList.remove('glow', glowClasses[i]));
+                this.classList.add('glow', glowClasses[idx]);
+                if (idx === 0) {
+                    setQuote('happy');
+                    setActivities('happy');
+                    selectedMood = 'happy';
+                } else if (idx === 1) {
+                    setQuote('neutral');
+                    setActivities('neutral');
+                    selectedMood = 'neutral';
+                } else if (idx === 2) {
+                    setQuote('sad');
+                    setActivities('sad');
+                    selectedMood = 'sad';
+                }
+            });
+        });
+
+        // Helper: format date for weekly table (e.g., Fri:6:00pm)
+        function formatDayTime(dateStr, timeStr) {
+            const date = new Date(dateStr + (timeStr ? 'T' + timeStr : ''));
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'pm' : 'am';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            return `${days[date.getDay()]}:${hours}:${minutes}${ampm}`;
+        }
+
+        // --- Month navigation state ---
+        let currentMonth = new Date().getMonth() + 1; // 1-based
+        let currentYear = new Date().getFullYear();
+
+        function updateMonthLabel() {
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            document.getElementById('monthLabel').textContent = `${monthNames[currentMonth - 1]} ${currentYear}`;
+        }
+
+        document.getElementById('prevMonthBtn').addEventListener('click', function() {
+            currentMonth--;
+            if (currentMonth < 1) {
+                currentMonth = 12;
+                currentYear--;
+            }
+            fetchAndRenderMonthHistory();
+        });
+
+        document.getElementById('nextMonthBtn').addEventListener('click', function() {
+            currentMonth++;
+            if (currentMonth > 12) {
+                currentMonth = 1;
+                currentYear++;
+            }
+            fetchAndRenderMonthHistory();
+        });
+
+        // --- Week navigation state ---
+        let currentWeekStart = getStartOfWeek(new Date());
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay(); // 0 (Sun) - 6 (Sat)
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as first day
+            return new Date(d.setDate(diff));
+        }
+
+        function formatDate(date) {
+            return date.toISOString().slice(0, 10);
+        }
+
+        function updateWeekLabel() {
+            const weekStart = new Date(currentWeekStart);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            document.getElementById('weekLabel').textContent =
+                `${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`;
+        }
+
+        document.getElementById('prevWeekBtn').addEventListener('click', function() {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            fetchAndRenderWeekHistory();
+        });
+
+        document.getElementById('nextWeekBtn').addEventListener('click', function() {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            fetchAndRenderWeekHistory();
+        });
+
+        // --- Fetch and render week history for selected week ---
+        async function fetchAndRenderWeekHistory() {
+            updateWeekLabel();
+            const weekStartStr = formatDate(currentWeekStart);
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            const weekEndStr = formatDate(weekEnd);
+
+            let res = await fetch(`http://localhost:3001/api/mood/history?from=${weekStartStr}&to=${weekEndStr}`, { credentials: 'include' });
+            let data = await res.json();
+            const weekTbody = document.getElementById('weekHistory');
+            weekTbody.innerHTML = '';
+            let weekCounts = { happy: 0, neutral: 0, sad: 0 };
+            if (data.history && data.history.length) {
+                data.history.forEach(row => {
+                    weekTbody.innerHTML += `<tr>
+                        <td>${formatDayTime(row.date, row.time)}</td>
+                        <td>${row.mood}</td>
+                        <td>${row.note || ''}</td>
+                    </tr>`;
+                    if (row.mood.toLowerCase() === 'happy') weekCounts.happy++;
+                    else if (row.mood.toLowerCase() === 'neutral') weekCounts.neutral++;
+                    else if (row.mood.toLowerCase() === 'sad') weekCounts.sad++;
+                });
+            }
+            const weekChartCtx = document.getElementById('weekChart').getContext('2d');
+            renderMoodChart(weekChartCtx, weekCounts, 'This Week');
+        }
+
+        // --- Fetch and render weekly/monthly history and charts ---
+        async function fetchAndRenderHistory() {
+            await fetchAndRenderWeekHistory();
+            fetchAndRenderMonthHistory();
+        }
+
+        function renderMoodChart(ctx, dataCounts, label) {
+            const chartData = {
+                labels: ['Happy', 'Neutral', 'Sad'],
+                datasets: [{
+                    label: label,
+                    data: [dataCounts.happy, dataCounts.neutral, dataCounts.sad],
+                    backgroundColor: [
+                        'rgba(25, 135, 84, 0.7)',   // Happy (green)
+                        'rgba(255, 193, 7, 0.7)',   // Neutral (yellow)
+                        'rgba(220, 53, 69, 0.7)'    // Sad (red)
+                    ],
+                    borderColor: [
+                        'rgba(25, 135, 84, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const chartOptions = {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, precision: 0 }
+                }
+            };
+            // Destroy previous chart if exists
+            if (ctx._chartInstance) {
+                ctx._chartInstance.destroy();
+            }
+            ctx._chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: chartOptions
+            });
+        }
+
+        async function fetchAndRenderMonthHistory() {
+            updateMonthLabel();
+            // Get first and last day of the month
+            const firstDay = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+            const lastDay = new Date(currentYear, currentMonth, 0).getDate();
+            const lastDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+            // Fetch for this month
+            let res = await fetch(`http://localhost:3001/api/mood/history?from=${firstDay}&to=${lastDate}`, { credentials: 'include' });
+            let data = await res.json();
+            const monthTbody = document.getElementById('monthHistory');
+            monthTbody.innerHTML = '';
+            let monthCounts = { happy: 0, neutral: 0, sad: 0 };
+            if (data.history && data.history.length) {
+                data.history.forEach(row => {
+                    monthTbody.innerHTML += `<tr>
+                        <td>${row.date}</td>
+                        <td>${row.mood}</td>
+                        <td>${row.note || ''}</td>
+                    </tr>`;
+                    // Count moods for chart
+                    if (row.mood.toLowerCase() === 'happy') monthCounts.happy++;
+                    else if (row.mood.toLowerCase() === 'neutral') monthCounts.neutral++;
+                    else if (row.mood.toLowerCase() === 'sad') monthCounts.sad++;
+                });
+            }
+            // Render monthly chart
+            const monthChartCtx = document.getElementById('monthChart').getContext('2d');
+            renderMoodChart(monthChartCtx, monthCounts, 'This Month');
+        }
+
+        // Save mood and note to backend
+        document.getElementById('moodForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const note = document.getElementById('moodNote').value.trim();
+            if (!selectedMood) {
+                alert('Please select your mood.');
+                return;
+            }
+            const res = await fetch('http://localhost:3001/api/mood', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mood: selectedMood,
+                    note: note
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('Mood saved!');
+                document.getElementById('moodNote').value = '';
+                fetchAndRenderHistory(); // Refresh history after saving
+            } else {
+                alert(data.error || 'Failed to save mood.');
+            }
+        });
+
+        // --- Friends UI logic ---
+        async function searchUser() {
+            const username = document.getElementById('searchUserInput').value.trim();
+            if (!username) return;
+            const res = await fetch(`http://localhost:3001/api/users/search?username=${encodeURIComponent(username)}`, { credentials: 'include' });
+            const data = await res.json();
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '';
+            if (data.users && data.users.length) {
+                data.users.forEach(user => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-sm btn-success ms-2';
+                    btn.textContent = 'Add Friend';
+                    btn.onclick = () => sendFriendRequest(user.id);
+                    resultsDiv.innerHTML += `<div>${user.name} (@${user.username})</div>`;
+                    resultsDiv.appendChild(btn);
+                });
+            } else {
+                resultsDiv.textContent = 'No users found.';
+            }
+        }
+
+        async function sendFriendRequest(userId) {
+            await fetch('http://localhost:3001/api/friends/request', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            });
+            alert('Friend request sent!');
+        }
+
+        async function fetchFriendRequests() {
+            const res = await fetch('http://localhost:3001/api/friends/requests', { credentials: 'include' });
+            const data = await res.json();
+            const list = document.getElementById('friendRequestsList');
+            list.innerHTML = '';
+            if (data.requests && data.requests.length) {
+                data.requests.forEach(req => {
+                    const li = document.createElement('li');
+                    li.textContent = `${req.name} (@${req.username}) `;
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-sm btn-success ms-2';
+                    acceptBtn.textContent = 'Accept';
+                    acceptBtn.onclick = () => respondFriendRequest(req.id, 'accepted');
+                    const rejectBtn = document.createElement('button');
+                    rejectBtn.className = 'btn btn-sm btn-danger ms-2';
+                    rejectBtn.textContent = 'Reject';
+                    rejectBtn.onclick = () => respondFriendRequest(req.id, 'rejected');
+                    li.appendChild(acceptBtn);
+                    li.appendChild(rejectBtn);
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li>No friend requests.</li>';
+            }
+        }
+
+        async function respondFriendRequest(requestId, status) {
+            await fetch('http://localhost:3001/api/friends/respond', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, status })
+            });
+            fetchFriendRequests();
+            fetchFriendsList();
+        }
+
+        async function fetchFriendsList() {
+            const res = await fetch('http://localhost:3001/api/friends/list', { credentials: 'include' });
+            const data = await res.json();
+            const list = document.getElementById('friendsList');
+            list.innerHTML = '';
+            if (data.friends && data.friends.length) {
+                data.friends.forEach(friend => {
+                    const li = document.createElement('li');
+                    li.textContent = `${friend.name} (@${friend.username}) `;
+                    const viewBtn = document.createElement('button');
+                    viewBtn.className = 'btn btn-sm btn-info ms-2';
+                    viewBtn.textContent = 'View Mood History';
+                    viewBtn.onclick = () => showFriendMoodHistory(friend);
+                    const msgBtn = document.createElement('button');
+                    msgBtn.className = 'btn btn-sm btn-primary ms-2';
+                    msgBtn.textContent = 'Message';
+                    msgBtn.onclick = () => openChatModal(friend);
+                    li.appendChild(viewBtn);
+                    li.appendChild(msgBtn);
+                    list.appendChild(li);
+                });
+            } else {
+                list.innerHTML = '<li>No friends yet.</li>';
+            }
+        }
+
+        // --- Chat Modal UI logic (frontend only, no backend yet) ---
+        let currentChatFriend = null;
+
+        async function openChatModal(friend) {
+            currentChatFriend = friend;
+            document.getElementById('chatModalTitle').textContent = `Chat with ${friend.name} (@${friend.username})`;
+            document.getElementById('chatInput').value = '';
+            await loadChatMessages();
+            document.getElementById('chatModal').style.display = 'block';
+            document.getElementById('chatModal').classList.add('show');
+        }
+
+        function closeChatModal() {
+            document.getElementById('chatModal').style.display = 'none';
+            document.getElementById('chatModal').classList.remove('show');
+            currentChatFriend = null;
+        }
+
+        async function loadChatMessages() {
+            if (!currentChatFriend) return;
+            const res = await fetch(`http://localhost:3001/api/messages/${currentChatFriend.id}`, { credentials: 'include' });
+            const data = await res.json();
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            const myId = parseInt(localStorage.getItem('moodtracker_userid'), 10);
+            if (data.messages && data.messages.length) {
+                data.messages.forEach(msg => {
+                    const isMe = msg.sender_id === myId;
+                    chatMessages.innerHTML += `<div style="text-align:${isMe ? 'right' : 'left'}; position:relative;">
+                        <b>${isMe ? 'You' : currentChatFriend.name}:</b> ${msg.message}
+                        <span class="text-muted" style="font-size:0.8em;">${msg.created_at ? msg.created_at.replace('T', ' ').slice(0, 16) : ''}</span>
+                        ${isMe ? `<button class="btn btn-sm btn-danger ms-2" style="font-size:0.8em;" onclick="deleteMessage(${msg.id})">Delete</button>` : ''}
+                    </div>`;
+                });
+            } else {
+                chatMessages.innerHTML = '<div class="text-muted text-center">No messages yet</div>';
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Delete message function
+        async function deleteMessage(messageId) {
+            if (!confirm('Delete this message?')) return;
+            await fetch(`http://localhost:3001/api/messages/${messageId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            await loadChatMessages();
+        }
+
+        document.getElementById('sendChatBtn').addEventListener('click', async function() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg || !currentChatFriend) return;
+            await fetch('http://localhost:3001/api/messages/send', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiverId: currentChatFriend.id, message: msg })
+            });
+            input.value = '';
+            await loadChatMessages();
+        });
+
+        // Optionally, send message on Enter key
+        document.getElementById('chatInput').addEventListener('keydown', async function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('sendChatBtn').click();
+            }
+        });
+
+        // Store user id in localStorage for chat message alignment
+        async function storeUserId() {
+            // Always update user id on page load
+            const res = await fetch('http://localhost:3001/api/user', { credentials: 'include' });
+            const data = await res.json();
+            if (data && data.id) {
+                localStorage.setItem('moodtracker_userid', data.id);
+                localStorage.setItem('moodtracker_username', data.username);
+            }
+        }
+        storeUserId();
+
+        // --- Friends UI logic (cont'd) ---
+        async function showFriendMoodHistory(friend) {
+            document.getElementById('friendMoodModalTitle').textContent = `${friend.name} (@${friend.username}) - Mood History`;
+            const res = await fetch(`http://localhost:3001/api/friends/${friend.id}/mood/history?type=week`, { credentials: 'include' });
+            const data = await res.json();
+            const tbody = document.getElementById('friendMoodHistoryBody');
+            tbody.innerHTML = '';
+            if (data.history && data.history.length) {
+                data.history.forEach(row => {
+                    tbody.innerHTML += `<tr>
+                        <td>${row.date} ${row.time || ''}</td>
+                        <td>${row.mood}</td>
+                        <td>${row.note || ''}</td>
+                    </tr>`;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3">No mood history found.</td></tr>';
+            }
+            // Show modal (Bootstrap 5)
+            document.getElementById('friendMoodHistoryModal').style.display = 'block';
+            document.getElementById('friendMoodHistoryModal').classList.add('show');
+        }
+
+        function closeFriendMoodModal() {
+            document.getElementById('friendMoodHistoryModal').style.display = 'none';
+            document.getElementById('friendMoodHistoryModal').classList.remove('show');
+        }
+
+        document.getElementById('searchUserBtn').addEventListener('click', searchUser);
+
+        // On page load, fetch friend requests and friends list
+        fetchFriendRequests();
+        fetchFriendsList();
+
+        // Set default quote, color, and activities (happy) on page load
+        setQuote('happy');
+        setActivities('happy');
+
+        // Set welcome name from localStorage or backend
+        function setWelcomeName() {
+            let name = localStorage.getItem('moodtracker_name');
+            const welcomeEl = document.getElementById('welcomeName');
+            if (name) {
+                welcomeEl.textContent = name;
+            } else {
+                // Try to fetch from backend if not in localStorage
+                fetch('http://localhost:3001/api/user', { credentials: 'include' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.name) {
+                            welcomeEl.textContent = data.name;
+                            localStorage.setItem('moodtracker_name', data.name);
+                        } else {
+                            window.location.href = 'LogIn.html';
+                        }
+                    })
+                    .catch(() => window.location.href = 'LogIn.html');
+            }
+        }
+
+        setWelcomeName();
+        fetchAndRenderHistory();
+    </script>
+</body>
+</html>

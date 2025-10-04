@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container">
+        <h1 class="m-5 text-primary display-1">MOOD TRACKER</h1>
+    </div>
+    <div class="container border">
+        <div class="row bg-warning rounded">
+            <h1 class="text-success m-2">Welcome Back To MT.</h1>
+            <p class="text-primary">Enter your credentials</p>
+        </div>
+        <!--For Login-->
+        <div class="row pagination">
+            <form action="/mood.html" class="page-item was-validated" id="log" style="display: block;">
+                <div class="mb-3 mt-3">
+                    <label for="login-email" class="form-label">Email:</label><br>
+                    <input type="email" class="for-control" id="login-email" placeholder="Enter email">
+                </div>
+                <div class="mb-3">
+                    <label for="login-pass" class="form-label">Password:</label>
+                    <div class="input-group">
+                        <input type="password" class="for-control" id="login-pass" placeholder="Enter password">
+                        <button type="button" class="btn btn-success" id="toggle-login-pass">See password</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">LogIn</button>
+            </form>
+            <a href="#sign" id="show-sign">Create new account</a>
+
+            <!--For Signup-->
+            <form class="page-item" id="sign" style="display: none;">
+                <div class="mb-3 mt-3">
+                    <label for="signup-name" class="form-label">Name:</label><br>
+                    <input type="text" class="for-control" id="signup-name" placeholder="Enter your name" required>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label for="signup-username" class="form-label">Username:</label><br>
+                    <input type="text" class="for-control" id="signup-username" placeholder="Enter a unique username" required>
+                </div>
+                <div class="mb-3 mt-3">
+                    <label for="signup-email" class="form-label">Email:</label><br>
+                    <input type="email" class="for-control" id="signup-email" placeholder="Enter email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="signup-pass" class="form-label">Password:</label>
+                    <div class="input-group">
+                        <input type="password" class="for-control" id="signup-pass" placeholder="Enter password" required>
+                        <button type="button" class="btn btn-success" id="toggle-signup-pass">See password</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">SignIn</button>
+            </form>
+            <a href="#log" id="show-log" style="display: none;">Already have an account?</a>
+        </div>
+    </div>
+    <script>
+    document.getElementById('show-sign').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('log').style.display = 'none';
+        document.getElementById('sign').style.display = 'block';
+        document.getElementById('show-sign').style.display = 'none';
+        document.getElementById('show-log').style.display = 'inline';
+        document.querySelector('.row.bg-warning h1').textContent = 'Welcome To MT.';
+    });
+    document.getElementById('show-log').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('sign').style.display = 'none';
+        document.getElementById('log').style.display = 'block';
+        document.getElementById('show-sign').style.display = 'inline';
+        document.getElementById('show-log').style.display = 'none';
+        document.querySelector('.row.bg-warning h1').textContent = 'Welcome Back To MT.';
+    });
+    // On page load, ensure correct link visibility and welcome text
+    window.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('show-log').style.display = 'none';
+        document.getElementById('show-sign').style.display = 'inline';
+        document.querySelector('.row.bg-warning h1').textContent = 'Welcome Back To MT.';
+    });
+    // Toggle password visibility for login
+    const loginPass = document.getElementById('login-pass');
+    const toggleLoginPass = document.getElementById('toggle-login-pass');
+    toggleLoginPass.addEventListener('click', function() {
+        if (loginPass.type === 'password') {
+            loginPass.type = 'text';
+            toggleLoginPass.textContent = 'Hide password';
+        } else {
+            loginPass.type = 'password';
+            toggleLoginPass.textContent = 'See password';
+        }
+    });
+    // Toggle password visibility for signup
+    const signupPass = document.getElementById('signup-pass');
+    const toggleSignupPass = document.getElementById('toggle-signup-pass');
+    toggleSignupPass.addEventListener('click', function() {
+        if (signupPass.type === 'password') {
+            signupPass.type = 'text';
+            toggleSignupPass.textContent = 'Hide password';
+        } else {
+            signupPass.type = 'password';
+            toggleSignupPass.textContent = 'See password';
+        }
+    });
+
+    // Handle login form submit
+    document.getElementById('log').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-pass').value;
+        const res = await fetch('http://localhost:3001/api/login', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('moodtracker_name', data.name);
+            // Fetch user id and store it
+            const userRes = await fetch('http://localhost:3001/api/user', { credentials: 'include' });
+            const userData = await userRes.json();
+            if (userData && userData.id) {
+                localStorage.setItem('moodtracker_userid', userData.id);
+            }
+            window.location.href = 'mood.html';
+        } else {
+            alert(data.error || 'Login failed');
+        }
+    });
+
+    // Handle signup form submit
+    document.getElementById('sign').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('signup-name').value.trim();
+        const username = document.getElementById('signup-username').value.trim();
+        const email = document.getElementById('signup-email').value.trim();
+        const password = document.getElementById('signup-pass').value;
+        const res = await fetch('http://localhost:3001/api/register', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, username, email, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('moodtracker_name', data.name);
+            // Fetch user id and store it
+            const userRes = await fetch('http://localhost:3001/api/user', { credentials: 'include' });
+            const userData = await userRes.json();
+            if (userData && userData.id) {
+                localStorage.setItem('moodtracker_userid', userData.id);
+            }
+            window.location.href = 'mood.html';
+        } else {
+            alert(data.error || 'Signup failed');
+        }
+    });
+    </script>
+</body>
+</html>
