@@ -113,7 +113,7 @@
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-pass').value;
         const res = await fetch('https://mood-tracker-jf7q.onrender.com/api/login', {
-            method: 'POST',
+            method: 'POST', 
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
